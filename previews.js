@@ -18,8 +18,9 @@
     };
     const fade = () => {
       if (audio.paused) return;
+      widget.style.setProperty('--record-progress', String(Math.max(0, Math.min(1, audio.currentTime / limit))));
       const remaining = limit - audio.currentTime;
-      if (remaining <= 0) { audio.pause(); audio.currentTime = 0; return; }
+      if (remaining <= 0) { widget.style.setProperty('--record-progress', '1'); audio.pause(); return; }
       audio.volume = Math.max(0, Math.min(1, remaining / fadeDuration));
       frame = requestAnimationFrame(fade);
     };
@@ -32,7 +33,8 @@
     });
     audio.addEventListener('play', () => { update(); cancelAnimationFrame(frame); fade(); });
     audio.addEventListener('pause', () => { cancelAnimationFrame(frame); audio.volume = 1; update(); });
-    audio.addEventListener('timeupdate', () => { if (audio.currentTime >= limit) { audio.pause(); audio.currentTime = 0; } });
+    audio.addEventListener('timeupdate', () => { widget.style.setProperty('--record-progress', String(Math.max(0, Math.min(1, audio.currentTime / limit)))); if (audio.currentTime >= limit) audio.pause(); });
+    audio.addEventListener('ended', () => { widget.style.setProperty('--record-progress', '1'); });
     audio.addEventListener('error', () => { error.textContent = 'Audio unavailable in this browser.'; });
   });
 })();
