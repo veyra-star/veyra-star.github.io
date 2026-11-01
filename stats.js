@@ -1,7 +1,4 @@
-const key='veyra-suno-stats-v1';
 const fallback=[{date:'2026-10-31',followers:171,plays:'3.1K',likes:500,songs:23}];
-let localRecords=[];
-try { const saved=JSON.parse(localStorage.getItem(key)); if(Array.isArray(saved)) localRecords=saved; } catch {}
 let sharedRecords=fallback, records=[];
 const dateFormat=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
 const shortDate=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'short',timeZone:'UTC'});
@@ -28,16 +25,11 @@ function chart(){
  status.textContent=(points.length===1?'Per mostrare la crescita serve almeno un’altra rilevazione.':'Ogni punto rappresenta una rilevazione salvata.')+(approximate?' Gli ascolti indicati con K o M sono arrotondati da Suno.':'');
 }
 function render(){
- const merged=new Map();for(const r of sharedRecords)merged.set(r.date,r);for(const r of localRecords)merged.set(r.date,r);records=[...merged.values()].filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).sort((a,b)=>b.date.localeCompare(a.date));
+ const merged=new Map();for(const r of sharedRecords)merged.set(r.date,r);records=[...merged.values()].filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).sort((a,b)=>b.date.localeCompare(a.date));
  if(!records.length)return;
  const latest=records[0];for(const id of ['followers','plays','likes','songs']) document.getElementById(id).textContent=latest[id]??'—';
  document.getElementById('updated').textContent='Ultima rilevazione: '+dateFormat.format(dateOf(latest.date));
  const body=document.getElementById('rows');body.replaceChildren();for(const record of records){const row=document.createElement('tr');for(const value of [dateFormat.format(dateOf(record.date)),record.followers,record.plays,record.likes,record.songs]){const cell=document.createElement('td');cell.textContent=value??'—';row.append(cell)}body.append(row)}chart();
 }
-const form=document.getElementById('edit'),toggle=document.getElementById('toggle');
-toggle.addEventListener('click',()=>{form.hidden=!form.hidden;toggle.setAttribute('aria-expanded',String(!form.hidden));});
-const today=new Date();form.elements.date.value=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
-form.addEventListener('submit',event=>{event.preventDefault();const data=new FormData(form);const plays=String(data.get('plays')).trim();if(numeric(plays)===null){form.elements.plays.setCustomValidity('Inserisci un numero, per esempio 3200 o 3.2K.');form.elements.plays.reportValidity();return}const date=String(data.get('date'));const record={date,followers:Number(data.get('followers')),plays,likes:Number(data.get('likes')),songs:Number(data.get('songs'))};const next=localRecords.filter(item=>item.date!==date);next.push(record);try{localStorage.setItem(key,JSON.stringify(next));localRecords=next}catch{alert('Non riesco a salvare i dati in questo browser.');return}form.hidden=true;toggle.setAttribute('aria-expanded','false');render();});
-form.elements.plays.addEventListener('input',()=>form.elements.plays.setCustomValidity(''));
 document.getElementById('metric').addEventListener('change',chart);
 render();fetch('./data/suno-stats.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('unavailable');return r.json()}).then(data=>{if(Array.isArray(data)&&data.length){sharedRecords=data;render()}}).catch(()=>{});
