@@ -120,5 +120,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-grad
 .stats-section iframe{height:1370px}@media(max-width:700px){.stats-section iframe{height:1550px}}
 
 /* The record follows the actual preview position and returns to its sleeve. */
-.record-disc{left:calc(43px - 39px * var(--record-progress,0));top:calc(8px + 5px * var(--record-progress,0))}
-.record-widget:has(.record-button[aria-pressed="true"]) .record-button:hover .record-disc{transform:none}
+.record-disc{left:64px;top:13px;transition:none}
+.record-disc::after{content:"";position:absolute;inset:4px;border-radius:50%;background:conic-gradient(from 20deg,transparent 0deg,#eaf4ff66 20deg,transparent 36deg,transparent 165deg,#d6e7ff55 185deg,transparent 200deg);pointer-events:none}
+.record-button:hover .record-disc{transform:none}
+.is-playing .record-disc{animation:none}
